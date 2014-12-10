@@ -1,0 +1,166 @@
+<snippet>
+	<content><![CDATA[
+function ${1:Object} () {
+	// Timers
+	var d = new Date();
+	this.time = {
+		fpsTimer: 0,
+		lastTime: 0,
+		thisTime: d.getTime(),
+		deltaTime: 0
+	}
+	this.frames = 0;
+
+	// Assets
+	this.canvas = new Canvas( "${2:Canvas ID}" );
+	this.stack = [];
+	this.inputHandler = new InputHandler( this );
+
+	// States
+	this.states = {
+		running: false,
+		landscape: this.canvas.isLandscape
+	};
+
+	// Add stats
+	this.stats = new Stats();
+	this.stats.setMode( 0 );
+	this.stats.domElement.style.position = 'absolute';
+	this.stats.domElement.style.left = '1px';
+	this.stats.domElement.style.top = '1px';
+	document.body.appendChild( this.stats.domElement );
+
+	this.stack.push( $3 );
+
+	this.load();
+	this.start();
+}
+
+${1:Object}.prototype.load = function () {
+	this.stack[this.stack.length - 1].load();
+}
+
+${1:Object}.prototype.loop = function () {
+	this.stats.begin();
+
+	this.update( this.time );
+	this.render( this.canvas );
+
+	this.stats.end();
+
+	var that = this;
+	if ( this.states.running ) {
+		window.requestAnimationFrame( function () {
+			that.loop();
+		} );
+	}
+};
+
+${1:Object}.prototype.onResize = function () {
+
+}
+
+${1:Object}.prototype.pause = function () {
+
+}
+
+${1:Object}.prototype.render = function ( canvas ) {
+	canvas.clear();
+	this.stack[this.stack.length - 1].render( canvas );
+	this.frames++
+}
+
+${1:Object}.prototype.resume = function () {
+
+}
+
+${1:Object}.prototype.start = function () {
+	this.states.running = true;
+	this.loop();
+}
+
+${1:Object}.prototype.stop = function () {
+	if ( this.states.running ) {
+		this.states.running = false;
+	}
+}
+
+${1:Object}.prototype.update = function ( time ) {
+	var d = new Date();
+	time.lastTime = time.thisTime;
+	time.thisTime = d.getTime();
+	time.deltaTime = ( time.thisTime - time.lastTime ) / 1000;
+	time.fpsTimer += time.deltaTime;
+
+	if ( this.stack.length > 0 ) {
+		this.stack[this.stack.length - 1].update( time );
+	} else {
+		console.log( "nothing in call stack. :(" );
+		this.stop();
+	}
+}
+
+${1:Object}.prototype.updateTimer = function () {
+	var d = new Date();
+	this.lastTime = this.thisTime;
+	this.thisTime = d.getTime();
+	this.deltaTime = this.thisTime - this.lastTime;
+}
+
+
+
+function Canvas ( id ) {
+	this.elem = document.getElementById( id );
+	this.ctx = this.elem.getContext( '2d' );
+	this.width = this.elem.width = this.elem.clientWidth;
+	this.height = this.elem.height = this.elem.clientHeight;
+}
+
+Canvas.prototype.isLandscape = function () {
+	return ( window.innerHeight > window.innerWidth );
+}
+
+Canvas.prototype.clear = function () {
+	this.elem.width = this.elem.width;
+}
+
+Canvas.prototype.drawImage = function ( img, x, y ) {
+	this.ctx.drawImage( img, x, y );
+}
+
+
+
+function InputHandler ( obj ) {
+	obj.canvas.elem.addEventListener( "click", function ( e ) {
+		var click = {
+			x: e.offsetX,
+			y: e.offsetY
+		}
+		document.dispatchEvent( new CustomEvent( "canvasClick", {
+			detail: {
+				clickX: click.x,
+				clickY: click.y
+			}
+		} ) );
+	} );
+}
+
+
+
+function Game () {
+
+}
+
+Game.prototype.click = function ( x, y ) {}
+
+Game.prototype.load = function () {}
+
+Game.prototype.render = function ( canvas ) {}
+
+Game.prototype.update = function ( time ) {}
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>
